@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <script>
+
+glCanvas = document.createElement('canvas'),
+gl = glCanvas.getContext('webgl');
+gl.getExtension('OES_texture_float');
+gl.getExtension('OES_texture_float_linear')
+gl.getExtension('WEBGL_color_buffer_float')
+
+const width = 1000,
+    height = 800;
+
+// Gives an object a texture and a framebuffer
+const create = obj => {
+    obj.texture = gl.createTexture();
+    obj.frameBuffer = gl.createFramebuffer();
+
+    gl.bindTexture(gl.TEXTURE_2D, obj.texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, new Float32Array(width * height * 4));
+
+    // Any size should work
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, r.frameBuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, obj.texture, 0);
+
+    gl.viewport(0, 0, width, height);
+};
+
+// Two objects, both with a texture and a framebuffer
+const r = {},
+    tr = {};
+create(r);
+create(tr);
+
+
+
+// Every frame, the loop runs 100 times
+const loop = () => {
+    for (let i = 100; i --;) { 
+        const start = performance.now();
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, tr.frameBuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tr.texture, 0);
+
+        gl.viewport(0, 0, width, height);
+
+        gl.bindTexture(gl.TEXTURE_2D, r.texture);
+        gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
+
+        if (performance.now() - start > 50)
+            console.log('update', i, performance.now() - start);
+    }
+};
+
+document.addEventListener('mousedown', () => window.setInterval(loop, 1));
+
+
+
+
+    </script>
+</body>
+
+</html>
